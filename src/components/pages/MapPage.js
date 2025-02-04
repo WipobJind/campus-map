@@ -124,7 +124,7 @@ const buildings = [
   },
   {
     id: 17,
-    name: "Vincent Mary School of Science and Technology (SLM)",
+    name: "School of Medicine (SLM)",
     shortName: "SLM",
     category: "academic",
     position: [13.613167335591415, 100.83540847832656]
