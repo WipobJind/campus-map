@@ -1,193 +1,155 @@
 import React, { useState } from 'react';
-import { MapPin, Navigation, Info, Search } from 'lucide-react';
-import { motion, AnimatePresence } from 'framer-motion';
-import { MapContainer, TileLayer, Marker, Popup, useMap } from 'react-leaflet';
-import 'leaflet/dist/leaflet.css';
-import L from 'leaflet';
+import MapPage from './components/pages/MapPage';
+import { MapPin, Navigation } from 'lucide-react';
 
-// Fix Leaflet marker icons
-delete L.Icon.Default.prototype._getIconUrl;
-L.Icon.Default.mergeOptions({
-  iconRetinaUrl: require('leaflet/dist/images/marker-icon-2x.png'),
-  iconUrl: require('leaflet/dist/images/marker-icon.png'),
-  shadowUrl: require('leaflet/dist/images/marker-shadow.png'),
-});
-
-// Page transition variants
-const pageVariants = {
-  initial: {
-    opacity: 0,
-    x: '100vw'
-  },
-  animate: {
-    opacity: 1,
-    x: 0,
-    transition: {
-      type: 'spring',
-      damping: 25,
-      stiffness: 100
-    }
-  },
-  exit: {
-    opacity: 0,
-    x: '-100vw',
-    transition: {
-      duration: 0.3
-    }
-  }
-};
-
-// Welcome Page with Animation
 const WelcomePage = ({ onNavigate }) => {
-  return (
-    <motion.div
-      variants={pageVariants}
-      initial="initial"
-      animate="animate"
-      exit="exit"
-      className="min-h-screen bg-gray-50 flex flex-col items-center justify-center p-6"
-    >
-      {/* Your existing Welcome page content */}
-    </motion.div>
-  );
+ return (
+   <div className="min-h-screen bg-gradient-to-b from-red-50 to-white flex flex-col items-center justify-center p-6">
+     <div className="max-w-md w-full space-y-10">
+       <div className="text-center space-y-6">
+         <div className="relative inline-block">
+           <div className="bg-red-600 w-24 h-24 rounded-full flex items-center justify-center mx-auto shadow-lg transform hover:scale-105 transition-transform duration-300">
+             <MapPin className="w-12 h-12 text-white" />
+           </div>
+         </div>
+
+         <div className="space-y-3">
+           <h1 className="text-4xl font-bold text-gray-900">ABAC Navigator</h1>
+           <p className="text-xl text-gray-600 font-light">Discover Your Way Around</p>
+         </div>
+       </div>
+
+       <div className="bg-white rounded-2xl shadow-xl p-6 space-y-6">
+         <h2 className="text-sm font-semibold text-gray-500 uppercase tracking-wider text-center">Why use ABAC Navigator?</h2>
+         
+         <div className="grid grid-cols-2 gap-4">
+           <div className="bg-red-50 rounded-xl p-4 text-center hover:bg-red-100 transition-colors duration-200 transform hover:scale-105">
+             <div className="bg-red-100 w-12 h-12 rounded-full flex items-center justify-center mx-auto mb-3">
+               <MapPin className="w-6 h-6 text-red-600" />
+             </div>
+             <h3 className="font-medium text-gray-900">Real-Time</h3>
+             <p className="text-sm text-gray-600 mt-1">Live location tracking</p>
+           </div>
+
+           <div className="bg-blue-50 rounded-xl p-4 text-center hover:bg-blue-100 transition-colors duration-200 transform hover:scale-105">
+             <div className="bg-blue-100 w-12 h-12 rounded-full flex items-center justify-center mx-auto mb-3">
+               <MapPin className="w-6 h-6 text-blue-600" />
+             </div>
+             <h3 className="font-medium text-gray-900">Buildings</h3>
+             <p className="text-sm text-gray-600 mt-1">Easy building search</p>
+           </div>
+
+           <div className="bg-green-50 rounded-xl p-4 text-center hover:bg-green-100 transition-colors duration-200 transform hover:scale-105">
+             <div className="bg-green-100 w-12 h-12 rounded-full flex items-center justify-center mx-auto mb-3">
+               <MapPin className="w-6 h-6 text-green-600" />
+             </div>
+             <h3 className="font-medium text-gray-900">Routes</h3>
+             <p className="text-sm text-gray-600 mt-1">Optimal path finding</p>
+           </div>
+
+           <div className="bg-purple-50 rounded-xl p-4 text-center hover:bg-purple-100 transition-colors duration-200 transform hover:scale-105">
+             <div className="bg-purple-100 w-12 h-12 rounded-full flex items-center justify-center mx-auto mb-3">
+               <MapPin className="w-6 h-6 text-purple-600" />
+             </div>
+             <h3 className="font-medium text-gray-900">Time-Saving</h3>
+             <p className="text-sm text-gray-600 mt-1">Quick navigation</p>
+           </div>
+         </div>
+       </div>
+
+       <button
+         onClick={onNavigate}
+         className="w-full bg-red-600 text-white py-4 px-6 rounded-xl font-medium
+                  hover:bg-red-700 transform hover:scale-105 transition-all duration-200
+                  shadow-lg flex items-center justify-center space-x-2"
+       >
+         <span>Get Started</span>
+         <MapPin className="w-5 h-5" />
+       </button>
+     </div>
+   </div>
+ );
 };
 
-// Location Page with Animation
-const LocationPage = ({ onNavigate, onLocationChoice }) => {
-  return (
-    <motion.div
-      variants={pageVariants}
-      initial="initial"
-      animate="animate"
-      exit="exit"
-      className="min-h-screen bg-gray-50 flex flex-col items-center justify-center p-6"
-    >
-      {/* Your existing Location page content */}
-    </motion.div>
-  );
+const LocationPage = ({ onLocationChoice }) => {
+ return (
+   <div className="min-h-screen bg-gradient-to-b from-red-50 to-white flex flex-col items-center justify-center p-6">
+     <div className="max-w-md w-full">
+       <div className="bg-white rounded-xl shadow-lg p-8">
+         <div className="text-center mb-8">
+           <div className="bg-red-100 w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-6 transform hover:scale-110 transition-transform duration-300">
+             <Navigation className="w-10 h-10 text-red-600" />
+           </div>
+           <h2 className="text-3xl font-bold text-gray-900 mb-4">Enable Location</h2>
+           <p className="text-gray-600 text-lg">
+             Allow access to see your position and get directions to buildings
+           </p>
+         </div>
+
+         <div className="space-y-4">
+           <button
+             onClick={() => onLocationChoice(true)}
+             className="w-full bg-red-600 text-white py-4 px-6 rounded-lg font-medium
+                      hover:bg-red-700 transform hover:scale-105 transition-all duration-200
+                      shadow-lg flex items-center justify-center"
+           >
+             <Navigation className="w-5 h-5 mr-2" />
+             Enable Location Services
+           </button>
+           
+           <button
+             onClick={() => onLocationChoice(false)}
+             className="w-full bg-gray-100 text-gray-700 py-4 px-6 rounded-lg font-medium
+                      hover:bg-gray-200 transform hover:scale-105 transition-all duration-200
+                      shadow flex items-center justify-center"
+           >
+             Skip for Now
+           </button>
+         </div>
+
+         <div className="mt-6 p-4 bg-blue-50 rounded-lg flex items-start">
+           <div className="flex-shrink-0 w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center mr-4">
+             <MapPin className="w-6 h-6 text-blue-600" />
+           </div>
+           <p className="text-sm text-blue-800">
+             Your location is only used to show your position on the map and calculate directions.
+             It helps you navigate the campus more effectively.
+           </p>
+         </div>
+       </div>
+     </div>
+   </div>
+ );
 };
 
-// Map Controller Component
-const MapController = () => {
-  const map = useMap();
-  
-  useEffect(() => {
-    const bounds = L.latLngBounds([
-      [13.610731, 100.831681],
-      [13.616943, 100.841681]
-    ]);
-    map.setMaxBounds(bounds);
-    map.setMinZoom(15);
-    map.setMaxZoom(20);
-  }, [map]);
-
-  return null;
-};
-
-// Map Page with Animation and Full Functionality
-const MapPage = ({ userLocation }) => {
-  const [selectedBuilding, setSelectedBuilding] = useState(null);
-  const [searchTerm, setSearchTerm] = useState('');
-
-  const center = {
-    lat: 13.611984684699049,
-    lng: 100.8375817412228
-  };
-
-  // Filter buildings based on search
-  const filteredBuildings = buildings.filter(building =>
-    building.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    (building.shortName && building.shortName.toLowerCase().includes(searchTerm.toLowerCase()))
-  );
-
-  return (
-    <motion.div
-      variants={pageVariants}
-      initial="initial"
-      animate="animate"
-      exit="exit"
-      className="min-h-screen bg-white relative"
-    >
-      {/* Search Panel */}
-      <div className="absolute top-4 left-4 z-[1000] w-80">
-        <div className="bg-white rounded-lg shadow-xl p-4">
-          <input
-            type="text"
-            placeholder="Search buildings..."
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            className="w-full p-3 rounded-lg border border-gray-300"
-          />
-          
-          {searchTerm && (
-            <div className="mt-2 bg-white rounded-lg shadow-lg max-h-60 overflow-y-auto">
-              {filteredBuildings.map((building) => (
-                <button
-                  key={building.id}
-                  className="w-full text-left p-3 hover:bg-gray-50"
-                  onClick={() => setSelectedBuilding(building)}
-                >
-                  {building.name}
-                </button>
-              ))}
-            </div>
-          )}
-        </div>
-      </div>
-
-      {/* Map */}
-      <div className="h-screen">
-        <MapContainer
-          center={[center.lat, center.lng]}
-          zoom={17}
-          style={{ height: '100%', width: '100%' }}
-          zoomControl={false}
-        >
-          <TileLayer
-            url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-            attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-          />
-          <MapController />
-          
-          {userLocation && (
-            <Marker position={[userLocation.lat, userLocation.lng]}>
-              <Popup>You are here</Popup>
-            </Marker>
-          )}
-
-          {selectedBuilding && (
-            <Marker position={selectedBuilding.position}>
-              <Popup>{selectedBuilding.name}</Popup>
-            </Marker>
-          )}
-        </MapContainer>
-      </div>
-    </motion.div>
-  );
-};
-
-// Main App Component
 const App = () => {
-  const [currentPage, setCurrentPage] = useState('welcome');
-  const [userLocation, setUserLocation] = useState(null);
+ const [currentPage, setCurrentPage] = useState('welcome');
+ const [userLocation, setUserLocation] = useState(null);
 
-  return (
-    <AnimatePresence mode="wait">
-      {currentPage === 'welcome' && (
-        <WelcomePage key="welcome" onNavigate={setCurrentPage} />
-      )}
-      {currentPage === 'location' && (
-        <LocationPage 
-          key="location"
-          onNavigate={setCurrentPage}
-          onLocationChoice={setUserLocation}
-        />
-      )}
-      {currentPage === 'map' && (
-        <MapPage key="map" userLocation={userLocation} />
-      )}
-    </AnimatePresence>
-  );
+ const handleLocationChoice = (enableLocation) => {
+   if (enableLocation && 'geolocation' in navigator) {
+     navigator.geolocation.getCurrentPosition(
+       (position) => {
+         setUserLocation({
+           lat: position.coords.latitude,
+           lng: position.coords.longitude
+         });
+         setCurrentPage('map');
+       },
+       () => setCurrentPage('map')
+     );
+   } else {
+     setCurrentPage('map');
+   }
+ };
+
+ const pages = {
+   welcome: <WelcomePage onNavigate={() => setCurrentPage('location')} />,
+   location: <LocationPage onLocationChoice={handleLocationChoice} />,
+   map: <MapPage userLocation={userLocation} />
+ };
+
+ return pages[currentPage];
 };
 
 export default App;
