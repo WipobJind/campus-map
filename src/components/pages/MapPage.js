@@ -659,11 +659,6 @@ const MapPage = ({ userLocation: initialUserLocation }) => {
           zoomControl={false}
           fadeAnimation={true}
           zoomAnimation={true}
-          dragging={true}
-          touchZoom={false}
-          scrollWheelZoom={false}
-          doubleClickZoom={false}
-          
         >
           <TileLayer
             url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
