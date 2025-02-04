@@ -219,13 +219,6 @@ const buildings = [
     category: "facilities",
     position: [13.615327558680702, 100.83437013001915]
   },
-  {
-    id: 33,
-    name: "Test Location",
-    shortName: "Test",
-    category: "others",
-    position: [userLocation.lat, userLocation.lng] // Using current user location
-   }
 ];
 
   // Add your other buildings here with their categories
@@ -659,6 +652,9 @@ const MapPage = ({ userLocation: initialUserLocation }) => {
           zoomControl={false}
           fadeAnimation={true}
           zoomAnimation={true}
+          scrollWheelZoom={false}
+          doubleClickZoom={false}
+          touchZoom={false}
         >
           <TileLayer
             url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
