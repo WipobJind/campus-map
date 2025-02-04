@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { MapContainer, TileLayer, Marker, Popup, useMap, Polyline } from 'react-leaflet';
-import { Search, Navigation, Clock, Compass, Building2, BookOpen, Home, Activity, List, X, Package, Package2 } from 'lucide-react';
+import { Search, Navigation, Clock, Compass, Building2, BookOpen, Home, Activity, List, X, } from 'lucide-react';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 
