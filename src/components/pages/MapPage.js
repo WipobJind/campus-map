@@ -124,7 +124,7 @@ const buildings = [
   },
   {
     id: 17,
-    name: "School of Medicine (SLM)",
+    name: "Saint Luke School of Medicine (SLM)",
     shortName: "SLM",
     category: "academic",
     position: [13.613167335591415, 100.83540847832656]
@@ -218,6 +218,24 @@ const buildings = [
     name: "Car Park Area",
     category: "facilities",
     position: [13.615327558680702, 100.83437013001915]
+  },
+  {
+    id: 33,
+    name: "Infirmary Room (Queen of Sheba: 2nd Floor)",
+    category: "facilities",
+    position: [13.614057089022431, 100.83232069633848]
+  },
+  {
+    id: 34,
+    name: "Infirmary Room (SG)",
+    category: "facilities",
+    position: [13.612575566278052, 100.83874634928635]
+  },
+  {
+    id: 35,
+    name: "King's Court",
+    category: "sports",
+    position: [13.613561481656665, 100.83242115173253]
   },
 ];
 
@@ -703,4 +721,3 @@ const MapPage = ({ userLocation: initialUserLocation }) => {
 };
 
 export default MapPage;
-

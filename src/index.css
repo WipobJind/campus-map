@@ -57,3 +57,12 @@
   .leaflet-popup {
     z-index: 1001;
   }
+  .leaflet-tile {
+    will-change: transform;
+    transform-style: preserve-3d;
+    backface-visibility: hidden;
+  }
+  
+  .leaflet-container {
+    background: #f8f9fa;
+  }
