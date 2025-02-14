@@ -398,15 +398,28 @@ const WalkingRoute = ({ userLocation, destination }) => {
     fetchRoute();
   }, [userLocation, destination, map]);
 
-  return routePath.length > 0 ? (
-    <Polyline
-      positions={routePath}
-      color="#dc2626"
-      weight={4}
-      opacity={0.8}
-    />
-  ) : null;
+  return (
+    <>
+      {isLoading && (
+        <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 z-[1000]">
+          <div className="bg-white p-4 rounded-lg shadow-lg flex items-center space-x-2">
+            <div className="w-5 h-5 border-t-2 border-red-600 rounded-full animate-spin"></div>
+            <span className="text-gray-700">Calculating route...</span>
+          </div>
+        </div>
+      )}
+      {routePath.length > 0 && (
+        <Polyline
+          positions={routePath}
+          color="#dc2626"
+          weight={4}
+          opacity={0.8}
+        />
+      )}
+    </>
+  );
 };
+
 // Route Info Component
 const RouteInfo = ({ userLocation, destination }) => {
   const [routeInfo, setRouteInfo] = useState(null);
