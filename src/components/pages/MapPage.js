@@ -1,8 +1,9 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { MapContainer, TileLayer, Marker, Popup, useMap, Polyline } from 'react-leaflet';
 import { Search, Navigation, Clock, Compass, Building2, BookOpen, Home, Activity, List, X, } from 'lucide-react';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
+
 
 // Fix default icon issue
 delete L.Icon.Default.prototype._getIconUrl;
@@ -355,12 +356,22 @@ const BuildingsListPanel = ({ isOpen, onClose, onSelectBuilding }) => {
 // Walking Route Component
 const WalkingRoute = ({ userLocation, destination }) => {
   const [routePath, setRoutePath] = useState([]);
+  const [isLoading, setIsLoading] = useState(false);
+  const routeCache = useRef(new Map());
   const map = useMap();
 
   useEffect(() => {
     const fetchRoute = async () => {
       if (!userLocation || !destination) return;
 
+      const cacheKey = `${userLocation.lat},${userLocation.lng}-${destination[0]},${destination[1]}`;
+      
+      if (routeCache.current.has(cacheKey)) {
+        setRoutePath(routeCache.current.get(cacheKey));
+        return;
+      }
+
+      setIsLoading(true);
       try {
         const response = await fetch(
           `https://graphhopper.com/api/1/route?` +
@@ -375,9 +386,12 @@ const WalkingRoute = ({ userLocation, destination }) => {
         if (data.paths && data.paths[0]) {
           const coordinates = data.paths[0].points.coordinates.map(point => [point[1], point[0]]);
           setRoutePath(coordinates);
+          routeCache.current.set(cacheKey, coordinates);
         }
       } catch (error) {
         console.error('Error fetching route:', error);
+      } finally {
+        setIsLoading(false);
       }
     };
 
@@ -393,7 +407,6 @@ const WalkingRoute = ({ userLocation, destination }) => {
     />
   ) : null;
 };
-
 // Route Info Component
 const RouteInfo = ({ userLocation, destination }) => {
   const [routeInfo, setRouteInfo] = useState(null);
