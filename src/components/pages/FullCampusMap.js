@@ -1,6 +1,92 @@
-import React, { useState, useRef, useEffect } from 'react';
-import { X, ChevronLeft, Map } from 'lucide-react';
+import React, { useState } from 'react';
+import { X, ChevronLeft, Map, Search } from 'lucide-react';
 import { buildingCategories } from '../buildingCategories';
+
+const SearchPanel = ({ buildings, onSelectBuilding }) => {
+  const [searchTerm, setSearchTerm] = useState('');
+  const [selectedCategory, setSelectedCategory] = useState(null);
+
+  const filteredBuildings = buildings.filter(building => {
+    const matchesSearch = searchTerm === '' || 
+      building.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      (building.shortName && building.shortName.toLowerCase().includes(searchTerm.toLowerCase()));
+    
+    const matchesCategory = !selectedCategory || building.category === selectedCategory;
+    
+    return matchesSearch && matchesCategory;
+  });
+
+  return (
+    <div className="fixed top-20 left-4 w-80 bg-white rounded-lg shadow-lg z-20 overflow-hidden">
+      {/* Search Input */}
+      <div className="p-4 border-b">
+        <div className="relative">
+          <input
+            type="text"
+            placeholder="Search buildings..."
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            className="w-full p-2 pl-10 rounded-lg border border-gray-300 focus:ring-2 focus:ring-red-500 focus:border-transparent"
+          />
+          <Search className="absolute left-3 top-2.5 text-gray-400 w-5 h-5" />
+        </div>
+      </div>
+
+      {/* Categories */}
+      <div className="p-4 border-b">
+        <h3 className="text-sm font-semibold text-gray-700 mb-3">Categories</h3>
+        <div className="grid grid-cols-2 gap-2">
+          {Object.entries(buildingCategories).map(([key, category]) => (
+            <button
+              key={key}
+              onClick={() => setSelectedCategory(selectedCategory === key ? null : key)}
+              className={`flex items-center p-2 rounded-lg transition-colors
+                ${selectedCategory === key 
+                  ? category.color 
+                  : 'hover:bg-gray-50'}`}
+            >
+              <div className={`p-1.5 rounded-full ${selectedCategory === key ? 'bg-white/20' : category.color}`}>
+                {category.icon}
+              </div>
+              <span className="ml-2 text-sm">
+                {category.name}
+              </span>
+            </button>
+          ))}
+        </div>
+      </div>
+
+      {/* Building List */}
+      {filteredBuildings.length > 0 ? (
+        <div className="max-h-96 overflow-y-auto">
+          {filteredBuildings.map((building) => (
+            <button
+              key={building.id}
+              onClick={() => onSelectBuilding(building)}
+              className="w-full text-left p-4 hover:bg-gray-50 border-b transition-colors"
+            >
+              <div className="flex items-start space-x-3">
+                <div className={`p-1.5 rounded-full ${buildingCategories[building.category].color} mt-0.5`}>
+                  {buildingCategories[building.category].icon}
+                </div>
+                <div>
+                  <h3 className="font-medium text-gray-900">{building.name}</h3>
+                  {building.shortName && (
+                    <p className="text-sm text-gray-500">{building.shortName}</p>
+                  )}
+                </div>
+              </div>
+            </button>
+          ))}
+        </div>
+      ) : (
+        <div className="p-4 text-center text-gray-500">
+          No buildings found
+        </div>
+      )}
+    </div>
+  );
+};
 
 const BuildingDetail = ({ building, onClose }) => {
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
@@ -57,7 +143,7 @@ const BuildingDetail = ({ building, onClose }) => {
             <div className="space-y-6">
               <div className="flex items-center space-x-2">
                 <div className={`p-1.5 rounded-full ${buildingCategories[building.category].color}`}>
-                  {React.cloneElement(buildingCategories[building.category].icon, { className: 'w-3 h-3' })}
+                  {buildingCategories[building.category].icon}
                 </div>
                 <span className="font-medium text-gray-700">
                   {buildingCategories[building.category].name}
@@ -99,207 +185,8 @@ const BuildingDetail = ({ building, onClose }) => {
   );
 };
 
-const CategoryFilter = ({ categories, activeCategories, onToggleCategory }) => {
-  const [position, setPosition] = useState({ x: 20, y: 80 });
-  const [isDragging, setIsDragging] = useState(false);
-  const [dragStart, setDragStart] = useState({ x: 0, y: 0 });
-  const filterRef = useRef(null);
-
-  const handleMouseDown = (e) => {
-    if (e.target.closest('.drag-handle')) {
-      setIsDragging(true);
-      const event = e.touches ? e.touches[0] : e;
-      setDragStart({
-        x: event.clientX - position.x,
-        y: event.clientY - position.y
-      });
-    }
-  };
-
-  const handleMouseMove = (e) => {
-    if (isDragging && filterRef.current) {
-      const event = e.touches ? e.touches[0] : e;
-      const newX = event.clientX - dragStart.x;
-      const newY = event.clientY - dragStart.y;
-      
-      const maxX = window.innerWidth - filterRef.current.offsetWidth;
-      const maxY = window.innerHeight - filterRef.current.offsetHeight;
-
-      setPosition({
-        x: Math.max(0, Math.min(newX, maxX)),
-        y: Math.max(0, Math.min(newY, maxY))
-      });
-    }
-  };
-
-  const handleMouseUp = () => {
-    setIsDragging(false);
-  };
-
-  useEffect(() => {
-    if (isDragging) {
-      window.addEventListener('mousemove', handleMouseMove);
-      window.addEventListener('mouseup', handleMouseUp);
-      window.addEventListener('touchmove', handleMouseMove);
-      window.addEventListener('touchend', handleMouseUp);
-      return () => {
-        window.removeEventListener('mousemove', handleMouseMove);
-        window.removeEventListener('mouseup', handleMouseUp);
-        window.removeEventListener('touchmove', handleMouseMove);
-        window.removeEventListener('touchend', handleMouseUp);
-      };
-    }
-  }, [isDragging]);
-
-  return (
-    <div
-      ref={filterRef}
-      className="fixed bg-white rounded-lg shadow-lg z-20"
-      style={{
-        left: `${position.x}px`,
-        top: `${position.y}px`,
-        cursor: isDragging ? 'grabbing' : 'default'
-      }}
-      onMouseDown={handleMouseDown}
-      onTouchStart={handleMouseDown}
-    >
-      <div className="drag-handle p-2 border-b flex items-center justify-between cursor-grab active:cursor-grabbing">
-        <h3 className="text-sm font-semibold text-gray-700">Filter Categories</h3>
-        <div className="w-4 h-4 flex items-center justify-center">
-          <span className="block w-2 h-2 bg-gray-200 rounded-full"></span>
-        </div>
-      </div>
-
-      <div className="p-2 space-y-2">
-        {Object.entries(categories).map(([key, category]) => (
-          <label key={key} className="flex items-center space-x-2 cursor-pointer">
-            <input
-              type="checkbox"
-              checked={activeCategories.includes(key)}
-              onChange={() => onToggleCategory(key)}
-              className="rounded text-red-600 focus:ring-red-500"
-            />
-            <div className={`p-1 rounded-full ${category.color}`}>
-              {React.cloneElement(category.icon, { className: 'w-3 h-3' })}
-            </div>
-            <span className="text-sm text-gray-600">{category.name}</span>
-          </label>
-        ))}
-      </div>
-    </div>
-  );
-};
-
-const MapContainer = ({ 
-  filteredBuildings, 
-  buildingCategories, 
-  setSelectedBuilding,
-  showCoordinates,
-  mousePosition,
-  onMouseMove
-}) => {
-  const mapAspectRatio = 2000 / 1000; // Adjust based on your map's dimensions
-  
-  return (
-    <div className="fixed inset-0 pt-16">
-      <div className="relative w-full h-full flex items-center justify-center bg-gray-100">
-        <div 
-          className="relative w-full h-full"
-          style={{ maxWidth: `${window.innerHeight * mapAspectRatio}px` }}
-          onMouseMove={onMouseMove}
-        >
-          <div className="relative" style={{ paddingTop: `${(1 / mapAspectRatio) * 100}%` }}>
-            <img
-              src="/campus-map.jpg"
-              alt="ABAC Campus Map"
-              className="absolute top-0 left-0 w-full h-full object-contain"
-              draggable="false"
-            />
-            
-            <div className="absolute top-0 left-0 w-full h-full">
-              {filteredBuildings.map((building) => (
-                <button
-                  key={building.id}
-                  onClick={() => setSelectedBuilding(building)}
-                  className={`absolute rounded-full
-                             ${buildingCategories[building.category].color} 
-                             hover:scale-110 transition-transform duration-200 shadow-md
-                             p-1.5`}
-                  style={{
-                    left: `${building.mapPosition?.x || 50}%`,
-                    top: `${building.mapPosition?.y || 50}%`,
-                    transform: 'translate(-50%, -50%)'
-                  }}
-                  title={building.name}
-                >
-                  {React.cloneElement(buildingCategories[building.category].icon, { 
-                    className: 'w-3 h-3'
-                  })}
-                </button>
-              ))}
-            </div>
-
-            {showCoordinates && (
-              <div className="absolute inset-0 pointer-events-none">
-                <div 
-                  className="absolute bg-red-500/50 w-px h-full"
-                  style={{ left: `${mousePosition.x}%` }}
-                />
-                <div 
-                  className="absolute bg-red-500/50 w-full h-px"
-                  style={{ top: `${mousePosition.y}%` }}
-                />
-              </div>
-            )}
-          </div>
-        </div>
-      </div>
-    </div>
-  );
-};
-
 const FullCampusMap = ({ onBack, buildings }) => {
   const [selectedBuilding, setSelectedBuilding] = useState(null);
-  const [activeCategories, setActiveCategories] = useState(Object.keys(buildingCategories));
-  const [showCoordinates, setShowCoordinates] = useState(false);
-  const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
-  const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
-  const mapContainerRef = useRef(null);
-
-  const toggleCategory = (category) => {
-    setActiveCategories(prev => 
-      prev.includes(category)
-        ? prev.filter(cat => cat !== category)
-        : [...prev, category]
-    );
-  };
-
-  const handleMouseMove = (e) => {
-    if (showCoordinates && mapContainerRef.current) {
-      const rect = mapContainerRef.current.getBoundingClientRect();
-      const x = ((e.clientX - rect.left) / rect.width) * 100;
-      const y = ((e.clientY - rect.top) / rect.height) * 100;
-      setMousePosition({
-        x: Math.round(x * 100) / 100,
-        y: Math.round(y * 100) / 100
-      });
-    }
-  };
-
-  useEffect(() => {
-    const handleKeyPress = (e) => {
-      if (e.key === 'c' || e.key === 'C') {
-        setShowCoordinates(prev => !prev);
-      }
-    };
-
-    window.addEventListener('keypress', handleKeyPress);
-    return () => window.removeEventListener('keypress', handleKeyPress);
-  }, []);
-
-  const filteredBuildings = buildings.filter(building => 
-    activeCategories.includes(building.category)
-  );
 
   return (
     <div className="fixed inset-0 bg-white overflow-hidden">
@@ -323,20 +210,23 @@ const FullCampusMap = ({ onBack, buildings }) => {
       </div>
 
       {/* Map Container */}
-      <MapContainer
-        filteredBuildings={filteredBuildings}
-        buildingCategories={buildingCategories}
-        setSelectedBuilding={setSelectedBuilding}
-        showCoordinates={showCoordinates}
-        mousePosition={mousePosition}
-        onMouseMove={handleMouseMove}
-      />
+      <div className="fixed inset-0 pt-16">
+        <div className="relative w-full h-full flex items-center justify-center bg-gray-100">
+          <div className="relative w-full h-full">
+            <img
+              src="/campus-map.jpg"
+              alt="ABAC Campus Map"
+              className="w-full h-full object-contain"
+              draggable="false"
+            />
+          </div>
+        </div>
+      </div>
 
-      {/* Category Filter */}
-      <CategoryFilter
-        categories={buildingCategories}
-        activeCategories={activeCategories}
-        onToggleCategory={toggleCategory}
+      {/* Search Panel */}
+      <SearchPanel
+        buildings={buildings}
+        onSelectBuilding={setSelectedBuilding}
       />
 
       {/* Building Detail Modal */}
@@ -345,16 +235,6 @@ const FullCampusMap = ({ onBack, buildings }) => {
           building={selectedBuilding}
           onClose={() => setSelectedBuilding(null)}
         />
-      )}
-
-      {/* Coordinate Helper */}
-      {showCoordinates && (
-        <div className="fixed bottom-4 left-4 bg-white p-4 rounded-lg shadow-lg z-30">
-          <p className="font-mono text-sm">
-            mapPosition: {"{"} x: {mousePosition.x}, y: {mousePosition.y} {"}"}
-          </p>
-          <p className="text-xs text-gray-500 mt-1">Press 'C' to toggle coordinate helper</p>
-        </div>
       )}
     </div>
   );
