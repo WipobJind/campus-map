@@ -99,15 +99,14 @@ const BuildingDetail = ({ building, onClose }) => {
   );
 };
 
-const CategoryFilter = ({ categories, activeCategories, onToggleCategory, isMobile }) => {
-  const [position, setPosition] = useState({ x: isMobile ? 10 : 20, y: isMobile ? 70 : 80 });
+const CategoryFilter = ({ categories, activeCategories, onToggleCategory }) => {
+  const [position, setPosition] = useState({ x: 20, y: 80 });
   const [isDragging, setIsDragging] = useState(false);
   const [dragStart, setDragStart] = useState({ x: 0, y: 0 });
   const filterRef = useRef(null);
 
   const handleMouseDown = (e) => {
     if (e.target.closest('.drag-handle')) {
-      e.preventDefault();
       setIsDragging(true);
       const event = e.touches ? e.touches[0] : e;
       setDragStart({
@@ -159,7 +158,6 @@ const CategoryFilter = ({ categories, activeCategories, onToggleCategory, isMobi
       style={{
         left: `${position.x}px`,
         top: `${position.y}px`,
-        maxWidth: isMobile ? 'calc(100vw - 20px)' : '300px',
         cursor: isDragging ? 'grabbing' : 'default'
       }}
       onMouseDown={handleMouseDown}
@@ -182,11 +180,79 @@ const CategoryFilter = ({ categories, activeCategories, onToggleCategory, isMobi
               className="rounded text-red-600 focus:ring-red-500"
             />
             <div className={`p-1 rounded-full ${category.color}`}>
-              {React.cloneElement(category.icon, { className: isMobile ? 'w-2 h-2' : 'w-3 h-3' })}
+              {React.cloneElement(category.icon, { className: 'w-3 h-3' })}
             </div>
-            <span className="text-xs md:text-sm text-gray-600">{category.name}</span>
+            <span className="text-sm text-gray-600">{category.name}</span>
           </label>
         ))}
+      </div>
+    </div>
+  );
+};
+
+const MapContainer = ({ 
+  filteredBuildings, 
+  buildingCategories, 
+  setSelectedBuilding,
+  showCoordinates,
+  mousePosition,
+  onMouseMove
+}) => {
+  const mapAspectRatio = 2000 / 1000; // Adjust based on your map's dimensions
+  
+  return (
+    <div className="fixed inset-0 pt-16">
+      <div className="relative w-full h-full flex items-center justify-center bg-gray-100">
+        <div 
+          className="relative w-full h-full"
+          style={{ maxWidth: `${window.innerHeight * mapAspectRatio}px` }}
+          onMouseMove={onMouseMove}
+        >
+          <div className="relative" style={{ paddingTop: `${(1 / mapAspectRatio) * 100}%` }}>
+            <img
+              src="/campus-map.jpg"
+              alt="ABAC Campus Map"
+              className="absolute top-0 left-0 w-full h-full object-contain"
+              draggable="false"
+            />
+            
+            <div className="absolute top-0 left-0 w-full h-full">
+              {filteredBuildings.map((building) => (
+                <button
+                  key={building.id}
+                  onClick={() => setSelectedBuilding(building)}
+                  className={`absolute rounded-full
+                             ${buildingCategories[building.category].color} 
+                             hover:scale-110 transition-transform duration-200 shadow-md
+                             p-1.5`}
+                  style={{
+                    left: `${building.mapPosition?.x || 50}%`,
+                    top: `${building.mapPosition?.y || 50}%`,
+                    transform: 'translate(-50%, -50%)'
+                  }}
+                  title={building.name}
+                >
+                  {React.cloneElement(buildingCategories[building.category].icon, { 
+                    className: 'w-3 h-3'
+                  })}
+                </button>
+              ))}
+            </div>
+
+            {showCoordinates && (
+              <div className="absolute inset-0 pointer-events-none">
+                <div 
+                  className="absolute bg-red-500/50 w-px h-full"
+                  style={{ left: `${mousePosition.x}%` }}
+                />
+                <div 
+                  className="absolute bg-red-500/50 w-full h-px"
+                  style={{ top: `${mousePosition.y}%` }}
+                />
+              </div>
+            )}
+          </div>
+        </div>
       </div>
     </div>
   );
@@ -221,15 +287,6 @@ const FullCampusMap = ({ onBack, buildings }) => {
   };
 
   useEffect(() => {
-    const handleResize = () => {
-      setIsMobile(window.innerWidth < 768);
-    };
-
-    window.addEventListener('resize', handleResize);
-    return () => window.removeEventListener('resize', handleResize);
-  }, []);
-
-  useEffect(() => {
     const handleKeyPress = (e) => {
       if (e.key === 'c' || e.key === 'C') {
         setShowCoordinates(prev => !prev);
@@ -261,80 +318,43 @@ const FullCampusMap = ({ onBack, buildings }) => {
             <span className="font-medium text-gray-800">Static Map</span>
           </div>
 
-          <div className="w-10"></div> {/* Spacer for centering */}
+          <div className="w-10"></div>
         </div>
       </div>
 
       {/* Map Container */}
-      <div 
-        ref={mapContainerRef}
-        className="relative w-full h-full pt-16"
+      <MapContainer
+        filteredBuildings={filteredBuildings}
+        buildingCategories={buildingCategories}
+        setSelectedBuilding={setSelectedBuilding}
+        showCoordinates={showCoordinates}
+        mousePosition={mousePosition}
         onMouseMove={handleMouseMove}
-      >
-        <div className="relative w-full h-full">
-          <img
-            src="/campus-map.jpg"
-            alt="ABAC Campus Map"
-            className="w-full h-full object-contain"
-            draggable="false"
-          />
+      />
 
-          {filteredBuildings.map((building) => (
-            <button
-              key={building.id}
-              onClick={() => setSelectedBuilding(building)}
-              className={`absolute transform -translate-x-1/2 -translate-y-1/2 rounded-full
-                         ${buildingCategories[building.category].color} 
-                         hover:scale-110 transition-transform duration-200 shadow-md
-                         md:p-1.5 p-1`}
-              style={{
-                left: `${building.mapPosition?.x || 50}%`,
-                top: `${building.mapPosition?.y || 50}%`
-              }}
-              title={building.name}
-            >
-              {React.cloneElement(buildingCategories[building.category].icon, { 
-                className: 'md:w-3 md:h-3 w-2 h-2'
-              })}
-            </button>
-          ))}
-
-          {showCoordinates && (
-            <>
-              <div className="absolute inset-0 pointer-events-none">
-                <div 
-                  className="absolute bg-red-500/50 w-px h-full"
-                  style={{ left: `${mousePosition.x}%` }}
-                />
-                <div 
-                  className="absolute bg-red-500/50 w-full h-px"
-                  style={{ top: `${mousePosition.y}%` }}
-                />
-              </div>
-
-              <div className="fixed bottom-4 left-4 bg-white p-4 rounded-lg shadow-lg z-30">
-                <p className="font-mono text-sm">
-                  mapPosition: {"{"} x: {mousePosition.x}, y: {mousePosition.y} {"}"}
-                </p>
-                <p className="text-xs text-gray-500 mt-1">Press 'C' to toggle coordinate helper</p>
-              </div>
-            </>
-          )}
-        </div>
-      </div>
-
+      {/* Category Filter */}
       <CategoryFilter
         categories={buildingCategories}
         activeCategories={activeCategories}
         onToggleCategory={toggleCategory}
-        isMobile={isMobile}
       />
 
+      {/* Building Detail Modal */}
       {selectedBuilding && (
         <BuildingDetail
           building={selectedBuilding}
           onClose={() => setSelectedBuilding(null)}
         />
+      )}
+
+      {/* Coordinate Helper */}
+      {showCoordinates && (
+        <div className="fixed bottom-4 left-4 bg-white p-4 rounded-lg shadow-lg z-30">
+          <p className="font-mono text-sm">
+            mapPosition: {"{"} x: {mousePosition.x}, y: {mousePosition.y} {"}"}
+          </p>
+          <p className="text-xs text-gray-500 mt-1">Press 'C' to toggle coordinate helper</p>
+        </div>
       )}
     </div>
   );
