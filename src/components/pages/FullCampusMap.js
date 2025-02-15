@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { X, ChevronLeft } from 'lucide-react';
+import { X, ChevronLeft, Map } from 'lucide-react';
 import { buildingCategories } from '../buildingCategories';
 
 const BuildingDetail = ({ building, onClose }) => {
@@ -8,7 +8,6 @@ const BuildingDetail = ({ building, onClose }) => {
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 z-[2000] flex items-center justify-center p-4">
       <div className="bg-white rounded-xl w-full max-w-4xl max-h-[90vh] overflow-hidden flex flex-col">
-        {/* Header */}
         <div className="p-4 border-b flex justify-between items-center">
           <h2 className="text-xl font-bold text-gray-800">{building.name}</h2>
           <button 
@@ -19,10 +18,8 @@ const BuildingDetail = ({ building, onClose }) => {
           </button>
         </div>
         
-        {/* Content */}
         <div className="flex-1 overflow-y-auto">
-          <div className="p-4 grid grid-cols-2 gap-6">
-            {/* Image Section */}
+          <div className="p-4 grid grid-cols-1 md:grid-cols-2 gap-6">
             <div className="space-y-4">
               <div className="rounded-lg overflow-hidden">
                 {building.images && building.images.length > 0 ? (
@@ -38,16 +35,13 @@ const BuildingDetail = ({ building, onClose }) => {
                 )}
               </div>
               
-              {/* Image Navigation */}
               {building.images && building.images.length > 1 && (
                 <div className="flex space-x-2 overflow-x-auto">
                   {building.images.map((image, index) => (
                     <button
                       key={index}
                       onClick={() => setCurrentImageIndex(index)}
-                      className={`flex-shrink-0 ${
-                        index === currentImageIndex ? 'ring-2 ring-red-500' : ''
-                      }`}
+                      className={`flex-shrink-0 ${index === currentImageIndex ? 'ring-2 ring-red-500' : ''}`}
                     >
                       <img 
                         src={image} 
@@ -60,13 +54,10 @@ const BuildingDetail = ({ building, onClose }) => {
               )}
             </div>
 
-            {/* Details Section */}
             <div className="space-y-6">
               <div className="flex items-center space-x-2">
                 <div className={`p-1.5 rounded-full ${buildingCategories[building.category].color}`}>
-                  {React.cloneElement(buildingCategories[building.category].icon, { 
-                    className: 'w-3 h-3'
-                  })}
+                  {React.cloneElement(buildingCategories[building.category].icon, { className: 'w-3 h-3' })}
                 </div>
                 <span className="font-medium text-gray-700">
                   {buildingCategories[building.category].name}
@@ -108,36 +99,36 @@ const BuildingDetail = ({ building, onClose }) => {
   );
 };
 
-const CategoryFilter = ({ categories, activeCategories, onToggleCategory }) => {
-  const [position, setPosition] = useState({ x: 20, y: 80 });
+const CategoryFilter = ({ categories, activeCategories, onToggleCategory, isMobile }) => {
+  const [position, setPosition] = useState({ x: isMobile ? 10 : 20, y: isMobile ? 70 : 80 });
   const [isDragging, setIsDragging] = useState(false);
   const [dragStart, setDragStart] = useState({ x: 0, y: 0 });
   const filterRef = useRef(null);
 
   const handleMouseDown = (e) => {
     if (e.target.closest('.drag-handle')) {
+      e.preventDefault();
       setIsDragging(true);
+      const event = e.touches ? e.touches[0] : e;
       setDragStart({
-        x: e.clientX - position.x,
-        y: e.clientY - position.y
+        x: event.clientX - position.x,
+        y: event.clientY - position.y
       });
     }
   };
 
   const handleMouseMove = (e) => {
     if (isDragging && filterRef.current) {
-      const newX = e.clientX - dragStart.x;
-      const newY = e.clientY - dragStart.y;
+      const event = e.touches ? e.touches[0] : e;
+      const newX = event.clientX - dragStart.x;
+      const newY = event.clientY - dragStart.y;
       
       const maxX = window.innerWidth - filterRef.current.offsetWidth;
       const maxY = window.innerHeight - filterRef.current.offsetHeight;
 
-      const constrainedX = Math.max(0, Math.min(newX, maxX));
-      const constrainedY = Math.max(0, Math.min(newY, maxY));
-
       setPosition({
-        x: constrainedX,
-        y: constrainedY
+        x: Math.max(0, Math.min(newX, maxX)),
+        y: Math.max(0, Math.min(newY, maxY))
       });
     }
   };
@@ -150,9 +141,13 @@ const CategoryFilter = ({ categories, activeCategories, onToggleCategory }) => {
     if (isDragging) {
       window.addEventListener('mousemove', handleMouseMove);
       window.addEventListener('mouseup', handleMouseUp);
+      window.addEventListener('touchmove', handleMouseMove);
+      window.addEventListener('touchend', handleMouseUp);
       return () => {
         window.removeEventListener('mousemove', handleMouseMove);
         window.removeEventListener('mouseup', handleMouseUp);
+        window.removeEventListener('touchmove', handleMouseMove);
+        window.removeEventListener('touchend', handleMouseUp);
       };
     }
   }, [isDragging]);
@@ -164,18 +159,20 @@ const CategoryFilter = ({ categories, activeCategories, onToggleCategory }) => {
       style={{
         left: `${position.x}px`,
         top: `${position.y}px`,
+        maxWidth: isMobile ? 'calc(100vw - 20px)' : '300px',
         cursor: isDragging ? 'grabbing' : 'default'
       }}
       onMouseDown={handleMouseDown}
+      onTouchStart={handleMouseDown}
     >
-      <div className="drag-handle p-3 border-b flex items-center justify-between cursor-grab active:cursor-grabbing">
+      <div className="drag-handle p-2 border-b flex items-center justify-between cursor-grab active:cursor-grabbing">
         <h3 className="text-sm font-semibold text-gray-700">Filter Categories</h3>
         <div className="w-4 h-4 flex items-center justify-center">
-          <span className="block w-3 h-3 bg-gray-200 rounded-full"></span>
+          <span className="block w-2 h-2 bg-gray-200 rounded-full"></span>
         </div>
       </div>
 
-      <div className="p-3 space-y-2">
+      <div className="p-2 space-y-2">
         {Object.entries(categories).map(([key, category]) => (
           <label key={key} className="flex items-center space-x-2 cursor-pointer">
             <input
@@ -184,10 +181,10 @@ const CategoryFilter = ({ categories, activeCategories, onToggleCategory }) => {
               onChange={() => onToggleCategory(key)}
               className="rounded text-red-600 focus:ring-red-500"
             />
-            <div className={`p-1.5 rounded-full ${category.color}`}>
-              {React.cloneElement(category.icon, { className: 'w-3 h-3' })}
+            <div className={`p-1 rounded-full ${category.color}`}>
+              {React.cloneElement(category.icon, { className: isMobile ? 'w-2 h-2' : 'w-3 h-3' })}
             </div>
-            <span className="text-sm text-gray-600">{category.name}</span>
+            <span className="text-xs md:text-sm text-gray-600">{category.name}</span>
           </label>
         ))}
       </div>
@@ -197,11 +194,10 @@ const CategoryFilter = ({ categories, activeCategories, onToggleCategory }) => {
 
 const FullCampusMap = ({ onBack, buildings }) => {
   const [selectedBuilding, setSelectedBuilding] = useState(null);
-  const [activeCategories, setActiveCategories] = useState(
-    Object.keys(buildingCategories)
-  );
+  const [activeCategories, setActiveCategories] = useState(Object.keys(buildingCategories));
   const [showCoordinates, setShowCoordinates] = useState(false);
   const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
+  const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
   const mapContainerRef = useRef(null);
 
   const toggleCategory = (category) => {
@@ -225,6 +221,15 @@ const FullCampusMap = ({ onBack, buildings }) => {
   };
 
   useEffect(() => {
+    const handleResize = () => {
+      setIsMobile(window.innerWidth < 768);
+    };
+
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
+
+  useEffect(() => {
     const handleKeyPress = (e) => {
       if (e.key === 'c' || e.key === 'C') {
         setShowCoordinates(prev => !prev);
@@ -240,30 +245,30 @@ const FullCampusMap = ({ onBack, buildings }) => {
   );
 
   return (
-    <div className="fixed inset-0 bg-white">
+    <div className="fixed inset-0 bg-white overflow-hidden">
       {/* Header */}
-      <div className="fixed top-0 left-0 right-0 bg-white shadow-md z-20 p-4 flex items-center">
-        <button
-          onClick={onBack}
-          className="p-2 hover:bg-gray-100 rounded-full mr-4"
-        >
-          <ChevronLeft className="w-5 h-5 text-gray-600" />
-        </button>
-        <h1 className="text-xl font-bold text-gray-800">ABAC Campus Map</h1>
-      </div>
+      <div className="fixed top-0 left-0 right-0 bg-white shadow-md z-20 h-16">
+        <div className="flex items-center justify-between h-full px-4">
+          <button
+            onClick={onBack}
+            className="p-2 hover:bg-gray-100 rounded-full"
+          >
+            <ChevronLeft className="w-5 h-5 text-gray-600" />
+          </button>
+          
+          <div className="flex items-center space-x-2">
+            <Map className="w-5 h-5 text-gray-600" />
+            <span className="font-medium text-gray-800">Static Map</span>
+          </div>
 
-      {/* Category Filter */}
-      <CategoryFilter
-        categories={buildingCategories}
-        activeCategories={activeCategories}
-        onToggleCategory={toggleCategory}
-      />
+          <div className="w-10"></div> {/* Spacer for centering */}
+        </div>
+      </div>
 
       {/* Map Container */}
       <div 
         ref={mapContainerRef}
-        className="fixed inset-0" 
-        style={{ top: '64px' }}
+        className="relative w-full h-full pt-16"
         onMouseMove={handleMouseMove}
       >
         <div className="relative w-full h-full">
@@ -274,14 +279,14 @@ const FullCampusMap = ({ onBack, buildings }) => {
             draggable="false"
           />
 
-          {/* Building Markers */}
           {filteredBuildings.map((building) => (
             <button
               key={building.id}
               onClick={() => setSelectedBuilding(building)}
-              className={`absolute transform -translate-x-1/2 -translate-y-1/2 p-1.5 rounded-full 
+              className={`absolute transform -translate-x-1/2 -translate-y-1/2 rounded-full
                          ${buildingCategories[building.category].color} 
-                         hover:scale-110 transition-transform duration-200 shadow-md`}
+                         hover:scale-110 transition-transform duration-200 shadow-md
+                         md:p-1.5 p-1`}
               style={{
                 left: `${building.mapPosition?.x || 50}%`,
                 top: `${building.mapPosition?.y || 50}%`
@@ -289,12 +294,11 @@ const FullCampusMap = ({ onBack, buildings }) => {
               title={building.name}
             >
               {React.cloneElement(buildingCategories[building.category].icon, { 
-                className: 'w-3 h-3'
+                className: 'md:w-3 md:h-3 w-2 h-2'
               })}
             </button>
           ))}
 
-          {/* Coordinate Helper */}
           {showCoordinates && (
             <>
               <div className="absolute inset-0 pointer-events-none">
@@ -309,17 +313,23 @@ const FullCampusMap = ({ onBack, buildings }) => {
               </div>
 
               <div className="fixed bottom-4 left-4 bg-white p-4 rounded-lg shadow-lg z-30">
-                <p className="font-mono">
+                <p className="font-mono text-sm">
                   mapPosition: {"{"} x: {mousePosition.x}, y: {mousePosition.y} {"}"}
                 </p>
-                <p className="text-sm text-gray-500 mt-1">Press 'C' to toggle coordinate helper</p>
+                <p className="text-xs text-gray-500 mt-1">Press 'C' to toggle coordinate helper</p>
               </div>
             </>
           )}
         </div>
       </div>
 
-      {/* Building Detail Modal */}
+      <CategoryFilter
+        categories={buildingCategories}
+        activeCategories={activeCategories}
+        onToggleCategory={toggleCategory}
+        isMobile={isMobile}
+      />
+
       {selectedBuilding && (
         <BuildingDetail
           building={selectedBuilding}
