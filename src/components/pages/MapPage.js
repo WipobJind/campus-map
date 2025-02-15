@@ -155,7 +155,7 @@ export const buildings = [
     mapPosition: { x: 20.5, y:76.63 },
     description: "A fine dining restaurant offering gourmet cuisine.",
     images: [
-      "/building-images/Crystal-1.png",
+      "/building-images/Crystal.png",
      
     ],
     facilities: [
@@ -440,8 +440,8 @@ export const buildings = [
       mapPosition: { x: 67.17, y: 19.35 },
       description: "A modern residence hall for students with comfortable amenities.",
       images: [
-        "/building-images/king-solomon-1.jpg",
-        "/building-images/king-solomon-2.jpg"
+        "/building-images/King.png",
+      
       ],
       facilities: [
         "Residence rooms"
