@@ -1,8 +1,11 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { MapContainer, TileLayer, Marker, Popup, useMap, Polyline } from 'react-leaflet';
-import { Search, Navigation, Clock, Compass, Building2, BookOpen, Home, Activity, List, X, } from 'lucide-react';
+import { Search, Navigation, Clock, Compass, Building2, BookOpen, Home, Activity, List, X,  } from 'lucide-react';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
+import FullCampusMap from './FullCampusMap';
+import { Map as MapIcon } from 'lucide-react';
+
 
 
 // Fix default icon issue
@@ -14,232 +17,605 @@ L.Icon.Default.mergeOptions({
 });
 
 // Add your buildings array here at the top
-const buildings = [
+export const buildings = [
   {
     id: 1,
     name: "Sala Chaluramuk Phaisit",
     shortName: "Sala",
     category: "others",
-    position: [13.611731210497892, 100.8386970437117]
+    position: [13.611731210497892, 100.8386970437117],
+    mapPosition: { x: 22.5, y: 60.68 },
+    description: "Traditional Thai pavilion at main entrance landmark",
+    images: [
+      "/building-images/Sala.jpg"
+  
+    ],
+    facilities: [
+      "Reception Area",
+      "Cultural Display",
+      "Meeting Space",
+      "Photo Point"
+
+    ]
   },
   {
     id: 2,
     name: "The Cathedral of Learning (CL)",
     shortName: "CL",
     category: "facilities",
-    position: [13.611984684699049, 100.8375817412228]
+    position: [13.611984684699049, 100.8375817412228],
+    mapPosition: { x: 29.17, y: 55.4 },
+    description: "Central administrative and academic building",
+    images: [
+      "/building-images/CL.jpg",
+    
+    ],
+    facilities: [
+      	"Administrative Offices",
+        "Food restaurants",
+        "Student Services",
+        "Library",
+        "Study rooms"
+
+    ]
   },
   {
     id: 3,
     name: "St. Raphael's Hall (SR)",
     shortName: "SR",
     category: "academic",
-    position: [13.61121549148576, 100.83755185188707]
+    position: [13.61121549148576, 100.83755185188707],
+    mapPosition: { x: 26.5, y: 54.9 },
+    description: "A central academic building with classrooms and lecture halls.",
+    images: [
+      "/building-images/SR.jpg",
+      
+    ],
+    facilities: [
+      "Lecture halls",
+      "Classrooms",
+      "Study rooms"
+    ]
   },
   {
     id: 4,
     name: "St. Michael's Hall (SM)",
     shortName: "SM",
     category: "academic",
-    position: [13.612124492354807, 100.83703521755558]
+    position: [13.612124492354807, 100.83703521755558],
+    mapPosition: { x: 32.75, y: 55.53 },
+    description: "An academic building dedicated to providing quality education in various fields.",
+    images: [
+      "/building-images/SM.jpg",
+  
+    ],
+    facilities: [
+      "Classrooms",
+      "Seminar rooms",
+      "Lecture rooms"
+    ]
   },
   {
     id: 5,
     name: "St. Gabriel's Hall (SG)",
     shortName: "SG",
     category: "academic",
-    position: [13.612641414881224, 100.83798191811387]
+    position: [13.612641414881224, 100.83798191811387],
+    mapPosition: { x: 34.5, y: 60.43 },
+    description: "A renowned hall known for its academic programs and interactive learning environment.",
+    images: [
+      "/building-images/SG.jpg",
+     
+    ],
+    facilities: [
+      "Lecture halls",
+      "Study areas"
+     
+    ]
   },
   {
     id: 6,
     name: "St. Louis Marie de Montfort's Church",
     category: "others",
-    position: [13.61304114862705, 100.83969710932935]
+    position: [13.61304114862705, 100.83969710932935],
+    mapPosition: { x: 29.75, y: 74 },
+    description: "A place of worship and spiritual reflection. People married here a lot",
+    images: [
+      "/building-images/church.jpg"
+      
+    ],
+    facilities: [
+      "Chapel",
+      "Prayer rooms",
+      "Spiritual center"
+    ]
   },
   {
     id: 7,
     name: "John XXIII Conference Center",
     category: "others",
-    position: [13.61271268417426, 100.84046958551204]
+    position: [13.61271268417426, 100.84046958551204],
+    mapPosition: { x: 25, y: 77.39 },
+    description: "A conference center for academic events, seminars, and meetings.",
+    images: [
+      "/building-images/XXIII.jpg",
+      
+    ],
+    facilities: [
+      "Conference halls",
+      "Meeting rooms",
+      "Event space"
+    ]
   },
   {
     id: 8,
     name: "The Crystal Restaurant by Chez Jean Pierre",
     category: "others",
-    position: [13.612295713193534, 100.84076308401379]
+    position: [13.612295713193534, 100.84076308401379],
+    mapPosition: { x: 20.5, y:76.63 },
+    description: "A fine dining restaurant offering gourmet cuisine.",
+    images: [
+      "/building-images/Crystal-1.png",
+     
+    ],
+    facilities: [
+      "Restaurant",
+      "Catering services",
+      "Private dining rooms"
+    ]
   },
   {
     id: 9,
     name: "Srisakdi Charmonman IT Building",
     shortName: "IT",
     category: "academic",
-    position: [13.611788861249442, 100.83639333488566]
+    position: [13.611788861249442, 100.83639333488566],
+    mapPosition: { x: 33, y: 48.87 },
+    description: "Dedicated to technology and IT-related programs.",
+    images: [
+      "/building-images/It.jpg",
+    
+    ],
+    facilities: [
+      "Computer labs",
+      "Tech workshops",
+      "Lecture halls"
+    ]
   },
   {
     id: 10,
     name: "Car Park Building",
     category: "facilities",
-    position: [13.611825595188922, 100.83610771404115]
+    position: [13.611825595188922, 100.83610771404115],
+    mapPosition: { x: 37, y: 45.48 },
+    description: "A multi-level parking structure with ample parking space.",
+    images: [
+      "/building-images/Car1.jpg",
+      
+    ],
+    facilities: [
+      "Parking",
+      "Electric vehicle charging stations",
+      "Security"
+    ]
   },
   {
     id: 11,
     name: "Montfort Del Rosario School of Architecture and Design (AR)",
     shortName: "AR",
     category: "academic",
-    position: [13.611985898450433, 100.8355487369979]
+    position: [13.611985898450433, 100.8355487369979],
+    mapPosition: { x: 39.25, y: 42.46 },
+    description: "A school offering specialized programs in architecture and design.",
+    images: [
+      "/building-images/AR.PNG",
+     
+    ],
+    facilities: [
+      "Design studios",
+      "Workshop spaces",
+      "Lecture rooms"
+    ]
   },
   {
     id: 12,
     name: "Albert Laurence School of Communication Arts (CA)",
     shortName: "CA",
     category: "academic",
-    position: [13.61217733111064, 100.83520486322418]
+    position: [13.61217733111064, 100.83520486322418],
+    mapPosition: { x: 42.92, y: 39.7 },
+    description: "A renowned institution for communication and media arts.",
+    images: [
+      "/building-images/CA.PNG",
+      
+    ],
+    facilities: [
+      "Media labs",
+      "Lecture halls",
+      "Audio-visual equipment"
+    ]
   },
   {
     id: 13,
     name: "Communication Arts Studio (CA Studio)",
     shortName: "CA Studio",
     category: "academic",
-    position: [13.612144508147054, 100.83490430838472]
+    position: [13.612144508147054, 100.83490430838472],
+    mapPosition: { x: 46.17, y: 38.19 },
+    description: "A studio space for communication and media production.",
+    images: [
+      "/building-images/CAS.PNG",
+     
+    ],
+    facilities: [
+      "Production studios",
+      "Editing rooms",
+      "Sound booths"
+    ]
   },
   {
     id: 14,
     name: "Martin de Tours School of Management (MSM)",
     shortName: "MSM",
     category: "academic",
-    position: [13.612812761683529, 100.83670977385692]
+    position: [13.612812761683529, 100.83670977385692],
+    mapPosition: { x: 38.67, y: 52.26 },
+    description: "A school dedicated to management studies and business education.",
+    images: [
+      "/building-images/MSM.PNG",
+     
+    ],
+    facilities: [
+      "Lecture rooms",
+      "Business labs",
+      "Seminar halls"
+    ]
   },
   {
     id: 15,
     name: "Martin de Tours School of Economics (MSE)",
     shortName: "MSE",
     category: "academic",
-    position: [13.612967664662046, 100.83630316810486]
+    position: [13.612967664662046, 100.83630316810486],
+    mapPosition: { x: 42.75, y: 49.37 },
+    description: "A center for studies in economics, finance, and business.",
+    images: [
+      "/building-images/MSE.PNG",
+     
+    ],
+    facilities: [
+      "Classrooms",
+      "Economic labs",
+      "Study areas"
+    ]
   },
-  {
-    id: 16,
-    name: "Vincent Mary School of Engineering and Science and Technology (VMES)",
-    shortName: "VMES",
-    category: "academic",
-    position: [13.613048771088446, 100.83586694824743]
-  },
-  {
-    id: 17,
-    name: "Saint Luke School of Medicine (SLM)",
-    shortName: "SLM",
-    category: "academic",
-    position: [13.613167335591415, 100.83540847832656]
-  },
-  {
-    id: 18,
-    name: "AU Bus Stand",
-    category: "facilities",
-    position: [13.613497268377435, 100.83674601878873]
-  },
-  {
-    id: 19,
-    name: "Pan Am International Flight Training Center - Thailand",
-    category: "academic",
-    position: [13.613462678313748, 100.8356707903892]
-  },
-  {
-    id: 20,
-    name: "President House",
-    category: "residence",
-    position: [13.612571751176095, 100.83434365353676]
-  },
-  {
-    id: 21,
-    name: "AU Mall/Cafeteria",
-    category: "facilities",
-    position: [13.612580840817737, 100.83333864406674]
-  },
-  {
-    id: 22,
-    name: "Tennis Court",
-    category: "sports",
-    position: [13.612566232313437, 100.83263821908521]
-  },
-  {
-    id: 23,
-    name: "Clock Tower & Museum",
-    category: "others",
-    position: [13.613256533173077, 100.83317122744039]
-  },
-  {
-    id: 24,
-    name: "King Solomon Residence Hall",
-    category: "residence",
-    position: [13.613141701422121, 100.83168097880481]
-  },
-  {
-    id: 25,
-    name: "King David Residence Hall",
-    category: "residence",
-    position: [13.61379348264587, 100.8316218729078]
-  },
-  {
-    id: 26,
-    name: "Queen of Sheba Residence Hall",
-    category: "residence",
-    position: [13.614146741037626, 100.8325533868695]
-  },
-  {
-    id: 27,
-    name: "Assumption University's Aquatic Center",
-    category: "sports",
-    position: [13.614778131952823, 100.83376856987536]
-  },
-  {
-    id: 28,
-    name: "John Paul II Sports Center",
-    category: "sports",
-    position: [13.615573299189698, 100.83378292355393]
-  },
-  {
-    id: 29,
-    name: "Indoor Swimming Pool (25m)",
-    category: "sports",
-    position: [13.615763263627494, 100.83307770679842]
-  },
-  {
-    id: 30,
-    name: "Indoor Badminton Court",
-    category: "sports",
-    position: [13.615936478401839, 100.83357710836876]
-  },
-  {
-    id: 31,
-    name: "Indoor Tennis Court",
-    category: "sports",
-    position: [13.615943851621868, 100.83388910038524]
-  },
-  {
-    id: 32,
-    name: "Car Park Area",
-    category: "facilities",
-    position: [13.615327558680702, 100.83437013001915]
-  },
-  {
-    id: 33,
-    name: "Infirmary Room (Queen of Sheba: 2nd Floor)",
-    category: "facilities",
-    position: [13.614057089022431, 100.83232069633848]
-  },
-  {
-    id: 34,
-    name: "Infirmary Room (SG)",
-    category: "facilities",
-    position: [13.612575566278052, 100.83874634928635]
-  },
-  {
-    id: 35,
-    name: "King's Court",
-    category: "sports",
-    position: [13.613561481656665, 100.83242115173253]
-  },
-];
-
+  
+    {
+      id: 16,
+      name: "Vincent Mary School of Engineering and Science and Technology (VMES)",
+      shortName: "VMES",
+      category: "academic",
+      position: [13.613048771088446, 100.83586694824743],
+      mapPosition: { x: 46.33, y: 45.6 },
+      description: "A leading institution for engineering, science, and technology education.",
+      images: [
+        "/building-images/VMES.PNG",
+        
+      ],
+      facilities: [
+        "Engineering labs",
+        "Science labs",
+        "Lecture halls",
+        "Research centers"
+      ]
+    },
+    {
+      id: 17,
+      name: "Saint Luke School of Medicine (SLM)",
+      shortName: "SLM",
+      category: "academic",
+      position: [13.613167335591415, 100.83540847832656],
+      mapPosition: { x: 49.58, y: 41.08 },
+      description: "A prestigious medical school offering programs in medicine and healthcare in the future...",
+      images: [
+        "/building-images/SLM.jpg",
+        
+      ],
+      facilities: [
+        "Medical labs",
+        "Lecture halls",
+        "Simulation rooms",
+        "Student lounges"
+      ]
+    },
+    {
+      id: 18,
+      name: "AU Bus Stand",
+      category: "facilities",
+      position: [13.613497268377435, 100.83674601878873],
+      mapPosition: { x: 48, y: 59.05 },
+      description: "The main bus stand providing transportation services across the campus.",
+      images: [
+        "/building-images/Bus.jpg",
+        
+      ],
+      facilities: [
+        "Bus parking",
+        "Waiting areas",
+        "Ticket counters"
+      ]
+    },
+    {
+      id: 19,
+      name: "Pan Am International Flight Training Center - Thailand",
+      category: "academic",
+      position: [13.613462678313748, 100.8356707903892],
+      mapPosition: { x: 52.17, y: 50.75 },
+      description: "A top-tier flight training center offering professional aviation programs.",
+      images: [
+        "/building-images/Pan.PNG",
+        
+      ],
+      facilities: [
+        "Flight simulators",
+        "Training classrooms",
+        "Pilot lounges"
+      ]
+    },
+    {
+      id: 20,
+      name: "President House",
+      category: "residence",
+      position: [13.612571751176095, 100.83434365353676],
+      mapPosition: { x: 50.25, y: 35.55 },
+      description: "The official residence of the university's president.",
+      images: [
+        "/building-images/PreHall.PNG",
+        
+      ],
+      facilities: [
+        "Presidential offices",
+        "Guest rooms",
+        "Conference rooms"
+      ]
+    },
+    {
+      id: 21,
+      name: "AU Mall/Cafeteria",
+      category: "facilities",
+      position: [13.612580840817737, 100.83333864406674],
+      mapPosition: { x: 57.33, y: 25.75 },
+      description: "A large cafeteria with various food stalls and shopping outlets.",
+      images: [
+        "/building-images/AuMall.PNG",
+        "/building-images/Cafe.jpg"
+        
+      ],
+      facilities: [
+        "Food stalls",
+        "Shops",
+        "Seating areas",
+        "Restrooms"
+      ]
+    },
+    {
+      id: 22,
+      name: "Tennis Court",
+      category: "sports",
+      position: [13.612566232313437, 100.83263821908521],
+      mapPosition: { x: 60.33, y: 20.47 },
+      description: "A well-maintained tennis court for both practice and matches.",
+      images: [
+        "/building-images/TennisC.PNG",
+      
+      ],
+      facilities: [
+        "Tennis courts",
+        "Seating areas",
+        "Lights for night matches"
+      ]
+    },
+    {
+      id: 23,
+      name: "Clock Tower & Museum",
+      category: "others",
+      position: [13.613256533173077, 100.83317122744039],
+      mapPosition: { x: 65.17, y: 26.38 },
+      description: "A historical clock tower with an adjacent museum showcasing artifacts.",
+      images: [
+        "/building-images/Clock.PNG",
+       
+      ],
+      facilities: [
+        "Clock tower",
+        "Museum",
+       
+      ]
+    },
+    {
+      id: 24,
+      name: "King Solomon Residence Hall",
+      category: "residence",
+      position: [13.613141701422121, 100.83168097880481],
+      mapPosition: { x: 67.17, y: 19.35 },
+      description: "A modern residence hall for students with comfortable amenities.",
+      images: [
+        "/building-images/king-solomon-1.jpg",
+        "/building-images/king-solomon-2.jpg"
+      ],
+      facilities: [
+        "Residence rooms"
+      ]
+    },
+    {
+      id: 25,
+      name: "King David Residence Hall",
+      category: "residence",
+      position: [13.61379348264587, 100.8316218729078],
+      mapPosition: { x: 72, y: 19 },
+      description: "Another well-equipped residence hall for students offering a vibrant community.",
+      images: [
+        "/building-images/Devid.PNG"
+        
+      ],
+      facilities: [
+        "residence rooms"
+       
+      ]
+    },
+    {
+      id: 26,
+      name: "Queen of Sheba Residence Hall",
+      category: "residence",
+      position: [13.614146741037626, 100.8325533868695],
+      mapPosition: { x: 72.25, y: 23.87 },
+      description: "A luxurious residence hall for students with high-end facilities.",
+      images: [
+        "/building-images/Sheba.PNG"
+      
+      ],
+      facilities: [
+        "Residence rooms"
+      ]
+    },
+    {
+      id: 27,
+      name: "Assumption University's Aquatic Center",
+      category: "sports",
+      position: [13.614778131952823, 100.83376856987536],
+      mapPosition: { x: 74.25, y: 33.42 },
+      description: "A modern aquatic center with Olympic-sized swimming pools and diving platforms.",
+      images: [
+        "/building-images/Aqua.jpg",
+        
+      ],
+      facilities: [
+        "Swimming pools",
+        "Diving platforms",
+        "Changing rooms"
+      ]
+    },
+    {
+      id: 28,
+      name: "John Paul II Sports Center",
+      category: "sports",
+      position: [13.615573299189698, 100.83378292355393],
+      mapPosition: { x: 78, y: 37.44 },
+      description: "A multi-purpose sports center for various athletic activities.",
+      images: [
+        "/building-images/II.jpg"
+        
+      ],
+      facilities: [
+        "Basketball courts",
+        "Gymnasium",
+        "Fitness equipment"
+      ]
+    },
+    {
+      id: 29,
+      name: "Indoor Swimming Pool (25m)",
+      category: "sports",
+      position: [13.615763263627494, 100.83307770679842],
+      mapPosition: { x: 82.67, y: 34.17 },
+      description: "An indoor swimming pool for training and recreational use.",
+      images: [
+        "/building-images/25m.jpg",
+      
+      ],
+      facilities: [
+        "25m swimming pool",
+        "Seating areas",
+        "Locker rooms"
+      ]
+    },
+    {
+      id: 30,
+      name: "Indoor Badminton Court",
+      category: "sports",
+      position: [13.615936478401839, 100.83357710836876],
+      mapPosition: { x: 83.5, y: 38.44 },
+      description: "A dedicated badminton court for practice and competitions.",
+      images: [
+        "/building-images/Bad.PNG",
+      
+      ],
+      facilities: [
+        "Badminton courts",
+        "Seating areas",
+        "Equipment rental"
+      ]
+    },
+    {
+      id: 31,
+      name: "Indoor Tennis Court",
+      category: "sports",
+      position: [13.615943851621868, 100.83388910038524],
+      mapPosition: { x: 82.17, y: 40.77 },
+      description: "A high-quality indoor tennis court for year-round practice.",
+      images: [
+        "/building-images/InIennis.PNG"
+        
+      ],
+      facilities: [
+        "Indoor tennis court",
+        "Lighting for night matches"
+      ]
+    },
+    {
+      id: 32,
+      name: "Car Park Area",
+      shortName: "Sahara",
+      category: "facilities",
+      position: [13.615327558680702, 100.83437013001915],
+      mapPosition: { x: 76.75, y: 44.85 },
+      description: "A spacious parking area for students and staff.",
+      images: [
+        "/building-images/Car2.PNG",
+        
+      ],
+      facilities: [
+        "Car parking spaces",
+        "Security",
+        "Restrooms"
+      ]
+    },
+    {
+      id: 33,
+      name: "Infirmary Room (Queen of Sheba: 2nd Floor)",
+      category: "facilities",
+      position: [13.614057089022431, 100.83232069633848],
+      mapPosition: { x: 70.28, y: 25.13 },
+      description: "A healthcare facility providing first aid and basic medical services.",
+      images: [
+        "/building-images/infirmary.png",
+      
+      ],
+      facilities: [
+        "First aid services",
+        "Nurses",
+        "Medical equipment"
+      ]
+    },
+    {
+      id: 34,
+      name: "King's Court",
+      category: "sports",
+      position: [13.613561481656665, 100.83242115173253],
+      mapPosition: { x: 68.58, y: 23.24 },
+      description: "A multi-sport area designed for recreational activities and competitive events.",
+      images: [
+        "/building-images/King.PNG",
+     
+      ],
+      facilities: [
+        "Sports fields",
+        "Seating areas",
+        "Restrooms"
+      ]
+    }
+  ];
+  
   // Add your other buildings here with their categories
 
 
@@ -578,7 +954,12 @@ const MapPage = ({ userLocation: initialUserLocation }) => {
   const [isSearchOpen, setIsSearchOpen] = useState(true);
   const [isBuildingsListOpen, setIsBuildingsListOpen] = useState(false);
   const [hasArrived, setHasArrived] = useState(false);
+  const [showFullMap, setShowFullMap] = useState(false);
 
+// In MapPage.js where you render FullCampusMap
+  if (showFullMap) {
+    return <FullCampusMap onBack={() => setShowFullMap(false)} buildings={buildings} />;
+  }
   const center = {
     lat: 13.611984684699049,
     lng: 100.8375817412228
@@ -616,6 +997,7 @@ const MapPage = ({ userLocation: initialUserLocation }) => {
             />
             <Search className="absolute left-3 top-3.5 text-gray-400 w-5 h-5" />
           </div>
+  
 
           {searchTerm && (
             <div className="mt-2 bg-white rounded-lg shadow-lg max-h-60 overflow-y-auto divide-y">
@@ -666,6 +1048,14 @@ const MapPage = ({ userLocation: initialUserLocation }) => {
         className="absolute top-4 right-4 z-[1000] bg-white p-3 rounded-lg shadow-lg hover:bg-gray-100"
       >
         <List className="w-5 h-5 text-gray-600" />
+      </button>
+      
+      <button
+        onClick={() => setShowFullMap(true)}
+        className="absolute top-20 right-4 z-[1000] bg-white p-3 rounded-lg shadow-lg hover:bg-gray-100"
+        title="Show Full Campus Map"
+      >
+        <MapIcon className="w-5 h-5 text-gray-600" />
       </button>
 
       {/* Buildings List Panel */}
